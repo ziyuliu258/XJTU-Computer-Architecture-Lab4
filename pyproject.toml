@@ -1,0 +1,12 @@
+[project]
+name = "lab4"
+version = "0.1.0"
+description = "Cache Simulator A — Lab 4 Computer Architecture"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.139.0",
+    "matplotlib>=3.11.0",
+    "pydantic>=2.13.4",
+    "python-multipart>=0.0.32",
+    "uvicorn>=0.50.0",
+]
