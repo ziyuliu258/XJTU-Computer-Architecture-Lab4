@@ -4,6 +4,12 @@ export interface CacheConfig {
   block_size: number;
 }
 
+export interface SampleTrace {
+  name: string;
+  title: string;
+  data: string;
+}
+
 export interface CacheStats {
   read_accesses: number;
   read_misses: number;

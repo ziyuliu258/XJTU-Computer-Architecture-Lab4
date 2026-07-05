@@ -4,6 +4,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 from sim_a.schemas import (
     CacheStats,
@@ -13,6 +14,9 @@ from sim_a.schemas import (
 )
 from sim_a.simulator import run_trace
 
+ROOT = Path(__file__).resolve().parent.parent
+DATA = ROOT / "data"
+
 app = FastAPI(title="Simulator A · Cache API")
 
 app.add_middleware(
@@ -21,6 +25,30 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+_SAMPLE_DEFS = [
+    ("022.li.din",      "022.li      Lisp 解释器"),
+    ("047.tomcatv.din", "047.tomcatv 矩阵转置"),
+    ("078.swm256.din",  "078.swm256  浅水方程"),
+    ("085.gcc.din",     "085.gcc     C 编译器"),
+]
+
+
+class SampleTrace(BaseModel):
+    name: str
+    title: str
+    data: str
+
+
+@app.get("/api/samples", response_model=list[SampleTrace])
+def list_samples() -> list[SampleTrace]:
+    result = []
+    for filename, title in _SAMPLE_DEFS:
+        path = DATA / filename
+        content = path.read_text(encoding="utf-8") if path.exists() else ""
+        result.append(SampleTrace(name=filename, title=title, data=content))
+    return result
+
 
 CACHE_SIZES  = [8192,  16384, 32768, 65536]
 ASSOCS       = [1, 2, 4, 8]

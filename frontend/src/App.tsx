@@ -1,26 +1,30 @@
-import { useState } from "react";
-import { simulate } from "./api/client";
+import { useEffect, useState } from "react";
+import { fetchSamples, simulate } from "./api/client";
 import ConfigPanel from "./components/ConfigPanel";
 import MissRateChart from "./components/MissRateChart";
 import SystemPanel from "./components/SystemPanel";
 import TracePanel from "./components/TracePanel";
-import type { CacheConfig, SimulateResponse } from "./types";
+import type { CacheConfig, SampleTrace, SimulateResponse } from "./types";
 
 const DEFAULT_CONFIG: CacheConfig = { cache_size: 16384, associativity: 2, block_size: 32 };
 
 export default function App() {
-  const [trace, setTrace]   = useState("");
-  const [config, setConfig] = useState<CacheConfig>(DEFAULT_CONFIG);
-  const [result, setResult] = useState<SimulateResponse | null>(null);
+  const [samples, setSamples] = useState<SampleTrace[]>([]);
+  const [trace, setTrace]     = useState("");
+  const [config, setConfig]   = useState<CacheConfig>(DEFAULT_CONFIG);
+  const [result, setResult]   = useState<SimulateResponse | null>(null);
   const [running, setRunning] = useState(false);
-  const [error, setError]   = useState<string | null>(null);
+  const [error, setError]     = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchSamples().then(setSamples).catch(() => undefined);
+  }, []);
 
   async function run() {
     if (!trace.trim()) { setError("请先粘贴或上传 trace 文件内容。"); return; }
     setRunning(true); setError(null);
     try {
-      const res = await simulate(trace, config);
-      setResult(res);
+      setResult(await simulate(trace, config));
     } catch (e) {
       setError(e instanceof Error ? e.message : "模拟失败");
     } finally {
@@ -59,7 +63,7 @@ export default function App() {
       <main className="workspace-layout">
         <section className="workspace-grid">
           <section className="workspace-input">
-            <TracePanel value={trace} onChange={setTrace} />
+            <TracePanel value={trace} samples={samples} onChange={setTrace} />
             <ConfigPanel config={config} onChange={setConfig} />
             <div className="panel">
               {error && <p className="error-banner">{error}</p>}

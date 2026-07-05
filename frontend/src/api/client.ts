@@ -1,4 +1,10 @@
-import type { CacheConfig, SimulateResponse } from "../types";
+import type { CacheConfig, SampleTrace, SimulateResponse } from "../types";
+
+export async function fetchSamples(): Promise<SampleTrace[]> {
+  const res = await fetch("/api/samples");
+  if (!res.ok) return [];
+  return res.json();
+}
 
 export async function simulate(
   traceData: string,
